@@ -1,0 +1,59 @@
+🟥 Napište co nejlepší grafický program jednoduché hry "Keyboard King", která bude fungovat následovně:
+✅👉 hra "rozsvítí" v dolní části obrazovky jeden ze šesti obdélníku, každému obdélníku z leva odpovídají klávesy S D F J K L,
+uživatel získá bod pokud stihne stisknout příslušnou klávesu dříve, než se "rozsvítí" další obdélník
+✅👉 hra se hraje na přednastavený počet kol, např. 10, přičemž kolo je vždy naznačeno padajícím barevným kruhem z horní části okna
+hry směrem k obdélníkům, když padající kruh dosáhne dolní konec obrazovky začíná další kolo, které je kratší (kruh padá rychleji)
+✅👉 jakmile uživatel stiskne po "rozsvícení" obdélníku klávesu, nemůže se již opravit - tento stav je uživateli indikován - například tak, že se příslušný obdélník změní na černý.
+✅👉 podaří-li se uživateli stisknout správnou klávesu získá bod, tento stav je indikován změnou skóre a zároveň i nějakým jiným způsobem (v přiloženém videu změnou barvy padajícího kruhu na černou)
+✅👉 obdélníky se mohou "přepínat" v pravidelných intervalech (jako na videu, kdy to je po jedné sekundě), případně náhodně či v rytmu nějaké vaší oblíbené písně
+✅👉 vedle skóre získaného počtu správně stisknutých kláves je hráč informován o počtu kol, které ještě mají proběhnout
+✅👉 na konci hry je uživatel informován o konci hry
+
+Grafické rozhraní hry (GUI) by mělo obsahovat:
+✅👉 dobře nastavený titulek okna (volitelně i změněnou ikonku okna)
+✅👉 menubar s rozumnými rozbalovacími menu, který bude obsahovat alespoň položku "Help" s dvěma položkami "Nápověda" a "O hře". Na menu "Nápověda" se zobrazí okno s jednoduchým návodem ke hře". Při kliknutí na "O hře" se zobrazí okno zobrazující verzi hry a jméno a fotografii (či nějaký AI generovaný avatar) charakterizujícího jejího tvůrce (tedy vás)"
+✅👉 canvas - vlastní oblast hry (jak by canvas mohl být rozložen je zobrazeno v přiloženém videu)
+
+💾 hru vytvořte jako nový GitHub repozitář, který bude obsahovat všechny potřebné soubory a odevzdejte pouze odkaz na GitHub repozitář se hrou 
+
+
+for x kol:
+    zkraceni intervalu mezi rozsvicenim
+
+
+    rozsviceni obdelniku:
+    if zmackne nez se dalsi rozsviti:
+        ziska bod - zmena skore
+        indikace ze zmackl dobre - napr prebarvenni na cernou - nebo prebarveni okraje na cervenou/zelenou
+
+    else
+        neziska bod
+        indikace ze zmackl spatne
+    rozsviceni dalsiho
+
+
+
+vykresleni
+tagy : [S D F J K L]
+for 6
+    zmena pozice
+    zmena tagu 
+    vykresli obdelnik (pozice, barva = bila, tag)
+
+
+barvy = []
+
+kolo:
+    vyberes nahodny tag z tagy[]
+    vykresli kolecko
+    zmenis barvu obdelniku kde jeho tag = tag
+    cekas co uzivatel zmacke
+    pridas/nechas skore
+
+    odbarveni obdelniku
+
+behem toho bezi cas a pada kolecko
+
+
+spravna klavesa - nigga kruh
+spatna klavesa - nigga obdelnik
