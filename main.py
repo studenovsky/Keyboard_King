@@ -1,9 +1,8 @@
-# Jan Bauer, Jaroslav Studenovský 8.E, 19.10.2024
-# Hra na mačkání kláves
+# Jan Bauer <bauerj@jirovcovka.net> , Jaroslav Studenovský <studenovskyj@jirovcovka.net>, 8.E, 19.10.2024
+# Keyboard KKING - Hra na mačkání kláves
 
 import tkinter
 import tkinter.messagebox
-import time
 import random
 from tkinter import PhotoImage, Label, Button, Toplevel
 
@@ -11,28 +10,25 @@ from tkinter import PhotoImage, Label, Button, Toplevel
 class App(tkinter.Tk):
     def __init__(self, titulek, sirka, vyska):
         super().__init__()
-        # Definování potřebných proměnných pro správnou funkčnost programu
-        self.vyska, self.sirka = vyska, sirka
-        self.pocet_kol = random.randint(2, 6)
-        self.timer_id = None
-        self.highscore = 1000
-        self.jmeno = ""
-        self.klavesy = ["s","d","f","j","k","l"]
-        self.barvy = ["violet", "blue", "cyan", "green", "yellow", "red"]
-        self.polomer = 13
-        self.x, self.y = 50, 15
-        self.tag = ""
-        self.pressed_key = ""
-        self.blocked = False
-        self.kola = 5
-        self.skore = 0
-        self.kruh_barva = "red"
-
+        # Definování potřebných proměnných pro správnou funkčnost programu + legenda jednotlivých proměnných
+        self.vyska, self.sirka = vyska, sirka  # Nastavení velikosti okna
+        self.pocet_kol = random.randint(2, 6)  # Počet kol je náhodně vybrán
+        self.klavesy = ["s","d","f","j","k","l"]  # Klávesy, které budou uživatelem mačkány
+        self.barvy = ["violet", "blue", "cyan", "green", "yellow", "red"]  # Barvy obdélníků
+        self.polomer = 13  # Poloměr tečky
+        self.x, self.y = 50, 15  # Výchozí pozice tečky
+        self.tag = ""  # Uloží klávesu, která byla rozsvícena
+        self.pressed_key = ""  # Uloží klávesu, kterou uživatel zmáčkl
+        self.blocked = False  # Indikátor, zda je vstup blokován
+        self.kola = 10  # Celkový počet kol
+        self.skore = 0  # Počáteční skóre
+        self.kruh_barva = "red"  # Barva tečky
 
         # nastavení titulku okna
         self.title(titulek)
-        self.iconbitmap("1.ico")
-        # konfigurace layoutu =================================================
+        self.iconbitmap("1.ico") # Nastavení ikony okna
+
+        # konfigurace layoutu
         self.rowconfigure(0, weight=1, minsize=15, pad=3)
         self.rowconfigure(1, weight=1, minsize=20, pad=3)
         self.columnconfigure(0, weight=1, minsize=50, pad=3)
@@ -41,7 +37,8 @@ class App(tkinter.Tk):
         # vytvoření plátna
         self.canvas = tkinter.Canvas(self, width=sirka, height=vyska, relief="sunken")
         self.canvas.grid(row=1, column=0, columnspan=2)
-        # MENU ================================================================
+        
+        # MENU (navigation)
         self.menubar = tkinter.Menu(self)
         fileMenu = tkinter.Menu(self.menubar, tearoff=0)
         fileMenu.add_command(label="Ukončení", command=self.ukonci)
@@ -54,90 +51,85 @@ class App(tkinter.Tk):
         helpMenu.add_command(label="O hře", command=self.about)
         self.config(menu=self.menubar)
 
-
-        # Víme že funguje
-        self.bind_events()
-        self.create_labels()  # vytvoření nápisů
-        # Vázání událostí
-        self.canvas.bind("<KeyPress>", lambda event: self.key_press(event))
+        self.create_labels()  # Vytvoření nápisů
+        self.canvas.bind("<KeyPress>", lambda event: self.key_press(event)) # Vázání událostí na plátno
         self.canvas.focus_set()
-        self.vykresli_obdelnik()
 
-        self.kolo()
-        self.tik()
-        self.auto_unblock()
+        # Vykreslení základních prvků
+        self.vykresli_obdelnik() # Vykreslení obdélníků
 
-
+        # Spuštění hlavních herních funkcí
+        self.pohyb_tecky() # Nastavení počáteční pozice tečky
+        self.tik() # Spuštění animace tečky
+        self.auto_unblock() # Periodické odblokování stisku kláves
 
     def tik(self):
-        """Obsluha časovače"""
-         # Tečka klesá dolu dokud není dole
+        """Funkce časovače, která animuje pohyb tečky směrem dolů"""
+
+        # Pohyb tečky směrem dolů
         if self.y < self.y_obdelniku - 20:
             self.y += 20
 
-        # Když je dole tak se vrátí tečka nahoru a začátek nového kola
+        # Když je tečka dole tak se vrátí nahoru a začne nové kolo
         else:
-            self.y = 15 # vrati se tecka nahoru
-            self.kolo() # nevim
-            self.kola -= 1 # odectu kolo
-            self.napis.config(text=f"Zbývající kola: {self.kola}") # prepisu kolo
+            self.y = 15 # Reset pozice tečky
+            self.pohyb_tecky() # Přesun tečky na novou pozici
+            self.kola -= 1 # Odečtení kola
+            self.napis.config(text=f"Zbývající kola: {self.kola}") # Aktualizace nápisu s počtem kol
         
         # Přičtení bodu když uživatel zmáčkne správnou klávesu
-        if self.tag != "": # kdyz sviti nejaky obdelnik
-            if self.pressed_key == self.tag: # kdyz zmacknu spravnou klavesu
-                self.skore += 1 #prictu skore
-                self.body.config(text=f"Skóre: {self.skore}") # vykreslim skore
-                self.kruh_barva = "black" # prebarvim kruh na cerno na 
-                self.canvas.itemconfig("circle", fill=self.kruh_barva) # prebarvim kruh na cerno ted
-                self.pressed_key = "" #zresetuju
+        if self.tag != "": # Kontrola, zda je nějaký obdélník rozsvícen
+            if self.pressed_key == self.tag: # Uživatel stiskl správnou klávesu
+                self.skore += 1 # Přičtení bodu
+                self.body.config(text=f"Skóre: {self.skore}") # Aktualizace skóre
+                self.kruh_barva = "black" 
+                self.canvas.itemconfig("circle", fill=self.kruh_barva) # Změna barvy tečky na černou 
+                self.pressed_key = "" # Reset stisknuté klávesy
 
-            if self.pressed_key != self.tag and self.pressed_key != "": # kdyz zmacknu spatnou klavesu
-                self.canvas.itemconfig(self.tag, fill="black") # prebarvim obdelnik na cerno
- 
-        print("autoblock " + str(self.blocked))
+            if self.pressed_key != self.tag and self.pressed_key != "": # Uživatel stiskl špatnou klávesu
+                self.canvas.itemconfig(self.tag, fill="black") # Obdélník zčerná
+
         self.vykresli_tecku() # Vykreslení tečky
-        if self.kola == 0:
+
+        if self.kola == 0: # Pokud už nejsou žádná kola, hra končí
             self.game_over()
         else:
-            self.after(30*self.kola, self.tik)
+            self.after(30*self.kola, self.tik) # Pokračování animace
 
     def auto_unblock(self):
-        """Kazdou sekundu odblokuji mackani"""
-        self.pressed_key = "" # vynuluje se zmacknuta klavesa
+        """Automatické odblokování stisku kláves každou sekundu"""
+        # Deklarace potřebných proměnných
+        self.pressed_key = ""
         self.interval = 1000
         self.blocked = False
-        self.kolo()
+
+        self.pohyb_tecky() # Přesun tečky na novou pozici
         self.vykresli_tecku()
-        self.after(self.interval, self.auto_unblock)
-        print("Auto unblock se spustil")
+        self.after(self.interval, self.auto_unblock) # Znovu spuštění této funkce po 1 sekundě
 
-
-    def kolo(self):
-        """dela zmeny pri zmene pozice kolecka"""
+    def pohyb_tecky(self):
+        """Nastavení pozice tečky, """
         # vytvari uklada novou pozici z moznych 6
         self.kruh_barva = "red"
         self.canvas.itemconfig(self.tag, fill="white")#odbarveni posledniho obdelniku
+
         # Nahodne vybrani hodnot pro dane kolo
         rand_pozice = random.randint(0,5) # vybereme novy obdelnik co se ma zmacknout
-        color = self.barvy[rand_pozice]
-        self.tag = self.klavesy[rand_pozice]
+        color = self.barvy[rand_pozice] # vybereme novou barvu pro obdélník
+        self.tag = self.klavesy[rand_pozice] # uložíme tag obdélníku, který bude rozsvícen
         self.pozice_tecky = self.coords_array[rand_pozice]
-
-        # Prebarveni obdelniku
-        self.canvas.itemconfig(self.tag, fill=color) # nabarvime novy obdelnik
+        self.canvas.itemconfig(self.tag, fill=color) # Nabarvení obdélníku
 
     def vykresli_tecku(self):
-        """Vykreslení tečky"""
+        """Vykreslení tečky a smazání předchozí tečky"""
         self.canvas.delete("circle")  # Smazání předchozí tečky
         self.tecka = self.canvas.create_oval(self.pozice_tecky-self.polomer, self.y - self.polomer, self.pozice_tecky + self.polomer, self.y + self.polomer, fill=self.kruh_barva, tag = "circle")  # Vykreslení tečky
-    
 
     def key_press(self,event):
-        """Kdyz zmacknu cokoliv tak zablokuju mackani"""
-        if self.blocked == False:
+        """Zpracování stisku kláves"""
+        if not self.blocked: # Pokud není vstup blokován
             self.pressed_key = event.char
-            self.blocked = True
-
+            self.blocked = True # Blokování vstupu po stisknutí klávesy
 
     def vykresli_obdelnik(self):
         """Vykreslí na začátku 6 bílých obdélníků"""
@@ -145,94 +137,74 @@ class App(tkinter.Tk):
         self.y_obdelniku = self.vyska - 20
         obdelnik_width = 25
         obdelnik_height = 10
-        self.coords_array = [] # X souřadnice středů obdélníků -> vykreslení kolečka
+        self.coords_array = [] # X souřadnice středů obdélníků -> důležité pro vykreslení kolečka
 
         for i in range(1,7):
-            #Výpočet první x souřadnice
+            # Výpočet x souřadnic pro každý obdélník
             coords = (3*i-2)*obdelnik_width+obdelnik_width
-            # Uložení středu obdélníku
             self.coords_array.append(round(coords + obdelnik_width / 2))
-            # Vykreslení obdélníku
             self.obdelnik=self.canvas.create_rectangle(coords, self.y_obdelniku, coords+obdelnik_width, self.y_obdelniku+obdelnik_height,tag=f"{self.klavesy[i-1]}")
-
-    def bind_events(self):
-        """Navázání událostí a jejich obsluhy"""
-        self.canvas.bind("q", self.ukonci)  # ukončení programu klávesou q
-        self.canvas.focus_set()
-
-    def create_buttons(self):
-        """Vytvoření tlačítek"""
-        
-        self.tlacitko = tkinter.Button(self, text="Start", command=self.start)
-        self.buttonquit = tkinter.Button(self, text="Quit", command=self.ukonci)
-        self.tlacitko.grid(row=1, column=0, padx=3, sticky="wse")
-        self.buttonquit.grid(row=3, column=0, padx=3, pady=5, sticky="wse")
 
     def show_rules(self):
         """Zobrazení pravidel hry"""
         tkinter.messagebox.showinfo("Pravidla hry", "Pravidla hry:\n\n"
-                                    "1. Zadejte své jméno/nick.\n"
-                                    "2. Stiskněte tlačítko START pro začátek kola.\n"
-                                    "3. Po náhodné době se objeví červená tečka.\n"
-                                    "4. Klikněte co nejrychleji na tečku.\n"
-                                    "5. Vaše reakční doba bude zobrazena.\n"
-                                    "6. Nejlepší hráč a jeho skóre je zobrazeno.")
+                                    "1.  hra \"rozsvítí\" v dolní části obrazovky jeden ze šesti obdélníku, každému obdélníku z leva odpovídají klávesy S D F J K L.\n\n"
+                                    "2. hra se hraje na přednastavený počet kol (10), přičemž kolo je vždy naznačeno padajícím barevným kruhem z horní části okna.\n\n"
+                                    "3. jakmile uživatel stiskne po \"rozsvícení\" obdélníku klávesu, nemůže se již opravit - tento stav je uživateli indikován tak, že se příslušný obdélník změní na černý.\n\n"
+                                    "4. podaří-li se uživateli stisknout správnou klávesu získá bod, tento stav je indikován změnou skóre a zároveň barvy padajícího kruhu na černou).\n\n"
+                                    "5. obdélníky se budou \"přepínat\" v pravidelných intervalech.\n\n"
+                                    "6. Nahoře obrazovky vidíte počet zbývajících kol a dosud dosažené skóre.")
     def create_labels(self):
-        """Vytvoření nápisů"""
-        # Jméno
+        """Vytvoření popisků v horní části okna"""
+        # Počet kol
         self.napis = tkinter.Label(self, text=f"Zbývající kola: {self.kola}", font=("Arial", 15, "bold"), fg="white", bg="blue") 
         self.napis.grid(row=0, column=0, sticky="we")
         
+        # Skóre
         self.body = tkinter.Label(self, text=f"Skóre: {self.skore}", font=("Arial", 15, "bold"), fg="white", bg="red") 
         self.body.grid(row=0, column=1, sticky="we")
         
     def about(self):
-        # Create a new window (Toplevel is like a popup window)
+        """"Zobrazení informací o hře"""
+        # Vytvoření nového okna
         messagebox = Toplevel(self)
         messagebox.title("Nápověda")
         messagebox.iconbitmap("1.ico")
-        
-        # Set the window size
         messagebox.geometry("1000x600")
 
-        # Load an image (GIF or PNG natively supported by tkinter)
-        img = PhotoImage(file="1.png")  # Use a .gif or .png image
-
-        # Add the image to a Label and pack it
+        # Načtení obrázku
+        img = PhotoImage(file="1.png")
         img_label = Label(messagebox, image=img)
-        img_label.image = img  # Keep a reference to avoid garbage collection
+        img_label.image = img
         img_label.pack(pady=10)
 
-        # Add a text message
+        # Text s informacemi o nás
         text_label = Label(messagebox, text=
                            "↑ O autorech ↑\n\n"
                            "Hra Keyboard King \n"
                            "Verze hry: 1.0 \n"
+                           "Autoři: Jarda Studenovský a Honza Bauer \n"
                            )
         text_label.pack(pady=10)
 
-        # Add an OK button to close the dialog
+        # Přidání tlačítka OK pro zavření okna
         ok_button = Button(messagebox, text="OK", command=messagebox.destroy)
         ok_button.pack(pady=10) 
 
     def game_over(self):
-        # Create a new window (Toplevel is like a popup window)
+        # Vytvoření nového okna
         messagebox = Toplevel(self)
         messagebox.title("Konec Hry")
         messagebox.iconbitmap("1.ico")
-        
-        # Set the window size
         messagebox.geometry("1000x560")
 
-        # Load an image (GIF or PNG natively supported by tkinter)
-        img = PhotoImage(file="game-over.png")  # Use a .gif or .png image
-
-        # Add the image to a Label and pack it
+        # Načtení obrázku
+        img = PhotoImage(file="game-over.png")
         img_label = Label(messagebox, image=img)
-        img_label.image = img  # Keep a reference to avoid garbage collection
+        img_label.image = img
         img_label.pack(pady=10)
         
-        # Add an OK button to close the dialog
+        # # Přidání tlačítka OK pro zavření okna
         ok_button = Button(messagebox, text="OK", command=messagebox.destroy)
         ok_button.pack(pady=10) 
 
